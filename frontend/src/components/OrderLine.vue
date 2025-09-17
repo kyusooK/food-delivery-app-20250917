@@ -1,0 +1,64 @@
+<template>
+
+    <div>
+        <div class="detail-title">
+        OrderLine
+        </div>
+        <v-col>
+            <Number label="MenuId" v-model="value.menuId" :editMode="editMode"/>
+            <String label="MenuName" v-model="value.menuName" :editMode="editMode"/>
+            <Number label="Quantity" v-model="value.quantity" :editMode="editMode"/>
+            <Number label="UnitPrice" v-model="value.unitPrice" :editMode="editMode"/>
+        </v-col>
+
+        <v-card-actions v-if="inList">
+            <slot name="actions"></slot>
+        </v-card-actions>
+    </div>
+</template>
+
+<script>
+import BaseEntity from './base-ui/BaseEntity.vue'
+import BasePicker from './base-ui/BasePicker.vue'
+
+export default {
+    name: 'OrderLine',
+    mixins:[BaseEntity],
+    components:{
+        BasePicker
+    },
+    data: () => ({
+        path: 'orderLines',
+    }),
+    props: {
+    },
+    watch: {
+        value(val){
+            this.value = val;
+            this.change();
+        },
+    },
+    async created() {
+        if (Array.isArray(this.modelValue)) {
+            this.value = await Promise.all(this.modelValue.map(async (item) => {
+                if (item && item.id !== undefined) {
+                    return await this.repository.findById(item.id);
+                }
+                return item;
+            }));
+        } else {
+            this.value = this.modelValue;
+            if (this.value && this.value.id !== undefined) {
+                this.value = await this.repository.findById(this.value.id);
+            }
+        }
+    },
+    methods: {
+        pick(val){
+            this.value = val;
+            this.change();
+        },
+    }
+}
+</script>
+
